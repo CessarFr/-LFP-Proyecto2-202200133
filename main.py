@@ -1,5 +1,7 @@
+
 import tkinter as tk
 from tkinter import filedialog, messagebox
+from lexico import AnalizadorLexico
 
 class InterfazApp:
     def __init__(self, root):
@@ -43,13 +45,15 @@ class InterfazApp:
         self.archivo_actual = None
 
     def abrir_archivo(self):
-        archivo = filedialog.askopenfilename(filetypes=[("Archivos de texto", "*.txt"), ("Todos los archivos", "*.*")])
+        archivo = filedialog.askopenfilename(filetypes=[("Archivos de texto", "*.html"), ("Todos los archivos", "*.*")])
         if archivo:
-            with open(archivo, "r") as f:
+            with open(archivo, "r", encoding="utf-8") as f: 
                 contenido = f.read()
             self.codigo_texto.delete("1.0", "end")
             self.codigo_texto.insert("1.0", contenido)
             self.archivo_actual = archivo
+            self.analizar_lexico(contenido)
+
 
     def guardar_archivo(self):
         if self.archivo_actual:
@@ -67,6 +71,14 @@ class InterfazApp:
 
     def salir(self):
         self.root.quit()
+
+    def analizar_lexico(self, contenido):
+        analizador = AnalizadorLexico()
+        lineas = contenido.split("\n")
+        for num_linea, linea in enumerate(lineas, start=1):
+            tokens = analizador.analizar_linea(linea)
+            for token in tokens:
+                print(f"Línea {num_linea}: {token.tipo}, {token.valor}")
 
 if __name__ == "__main__":
     root = tk.Tk()
