@@ -1,3 +1,4 @@
+# lexico.py
 
 class Token:
     def __init__(self, tipo, valor):
@@ -7,10 +8,10 @@ class Token:
 class AnalizadorLexico:
     def __init__(self):
         self.palabras_reservadas = {
-            "TipoFuncion", "CrearBD", "EliminarBD", "CrearColeccion", "EliminarColeccion",
+            "$set", "CrearBD", "EliminarBD", "CrearColeccion", "EliminarColeccion",
             "InsertarUnico", "ActualizarUnico", "EliminarUnico",
             "BuscarTodo", "BuscarUnico",
-            "nueva", "Funcion"
+            "nueva", "set"
         }
 
     def analizar_linea(self, linea):
@@ -26,7 +27,7 @@ class AnalizadorLexico:
                 if palabra_actual:
                     tokens.append(self.obtener_token(palabra_actual))
                     palabra_actual = ""
-            elif caracter in '();,.${}="':
+            elif caracter in ':();,.{}$="´':
                 if palabra_actual:
                     tokens.append(self.obtener_token(palabra_actual))
                     palabra_actual = ""
@@ -46,8 +47,16 @@ class AnalizadorLexico:
                     tokens.append(Token("CORCHETE_CERRADO", caracter))
                 elif caracter == ";":
                     tokens.append(Token("PUNTO_Y_COMA", caracter))
-            else:
+                elif caracter == ":":
+                    tokens.append(Token("DOS_PUNTOS", caracter))
+                elif caracter == ".":
+                    tokens.append(Token("PUNTO", caracter))
+                elif caracter == "$":
+                    tokens.append(Token("DOLAR", caracter))
+            elif caracter.isalnum():
                 palabra_actual += caracter
+            else:
+                tokens.append(Token("ERROR_LEXICO", caracter))
 
         if palabra_actual:
             tokens.append(self.obtener_token(palabra_actual))
@@ -65,7 +74,10 @@ class AnalizadorLexico:
             return Token("PALABRA_RESERVADA", palabra)
         elif palabra.startswith('"') and palabra.endswith('"'):
             return Token("CADENA", palabra[1:-1])
-        else:
+        elif palabra:
             return Token("IDENTIFICADOR", palabra)
+        else:
+            return None 
+
 
 
