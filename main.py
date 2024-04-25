@@ -1,7 +1,9 @@
-
+# main.py
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from lexico import AnalizadorLexico
+from sintactico import AnalizadorSintactico
+
 
 class InterfazApp:
     def __init__(self, root):
@@ -12,7 +14,6 @@ class InterfazApp:
 
         self.crear_menu()
         self.crear_areas()
-
 
     def crear_menu(self):
         menubar = tk.Menu(self.root)
@@ -47,12 +48,12 @@ class InterfazApp:
     def abrir_archivo(self):
         archivo = filedialog.askopenfilename(filetypes=[("Archivos de texto", "*.html"), ("Todos los archivos", "*.*")])
         if archivo:
-            with open(archivo, "r", encoding="utf-8") as f: 
+            with open(archivo, "r", encoding="utf-8") as f:  
                 contenido = f.read()
             self.codigo_texto.delete("1.0", "end")
             self.codigo_texto.insert("1.0", contenido)
-            self.archivo_actual = archivo
             self.analizar_lexico(contenido)
+            self.analizar_sintactico(contenido)
 
 
     def guardar_archivo(self):
@@ -72,13 +73,45 @@ class InterfazApp:
     def salir(self):
         self.root.quit()
 
+
     def analizar_lexico(self, contenido):
         analizador = AnalizadorLexico()
         lineas = contenido.split("\n")
+        tokens_validos = []
+        errores_lexicos = []
+
         for num_linea, linea in enumerate(lineas, start=1):
             tokens = analizador.analizar_linea(linea)
             for token in tokens:
-                print(f"Línea {num_linea}: {token.tipo}, {token.valor}")
+                if token.tipo != "ERROR_LEXICO":
+                    tokens_validos.append((num_linea, token))
+                else:
+                    errores_lexicos.append((num_linea, token))
+
+        for num_linea, token in tokens_validos:
+            print(f"Línea {num_linea}: {token.tipo}, {token.valor}")
+
+        for num_linea, token in errores_lexicos:
+            print(f"Línea {num_linea}: ERROR LÉXICO, {token.valor}")
+            
+
+    def analizar_sintactico(self, contenido):
+        analizador_lexico = AnalizadorLexico()
+        analizador_sintactico = AnalizadorSintactico()
+
+        tokens_por_linea = analizador_lexico.analizar_contenido(contenido)
+        estructuras_validas = []
+
+        for num_linea, tokens in enumerate(tokens_por_linea, start=1):
+            if analizador_sintactico.analizar_linea(tokens):
+                estructuras_validas.append(num_linea)
+
+        for num_linea, tokens in enumerate(tokens_por_linea, start=1):
+            if num_linea in estructuras_validas:
+                print(f"Línea {num_linea}: SINTACTICO, ESTRUCTURA VALIDA")
+            else:
+                print(f"Línea {num_linea}: ERROR_SINTACTICO, ESTRUCTURA NO VALIDA")
+  
 
 if __name__ == "__main__":
     root = tk.Tk()
