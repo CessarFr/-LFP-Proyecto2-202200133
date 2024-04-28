@@ -1,5 +1,6 @@
 # main.py
 import tkinter as tk
+from tkinter import ttk
 from tkinter import filedialog, messagebox
 from lexico import AnalizadorLexico
 from sintactico import AnalizadorSintactico
@@ -26,6 +27,14 @@ class InterfazApp:
         archivo_menu.add_separator()
         archivo_menu.add_command(label="Salir", command=self.salir)
         menubar.add_cascade(label="Archivo", menu=archivo_menu)
+        
+        traducir_menu = tk.Menu(menubar, tearoff=0)
+        traducir_menu.add_command(label="Traducir", command=self.traducir_archivo)
+        menubar.add_cascade(label="Traducir", menu=traducir_menu)
+        
+        herramientas_menu = tk.Menu(menubar, tearoff=0)
+        herramientas_menu.add_command(label="Tokens", command=self.mostrar_tokens)
+        menubar.add_cascade(label="Herramientas", menu=herramientas_menu)
 
         self.root.config(menu=menubar)
 
@@ -112,6 +121,66 @@ class InterfazApp:
             else:
                 print(f"Línea {num_linea}: ERROR_SINTACTICO, ESTRUCTURA NO VALIDA")
   
+    def traducir_archivo(self):
+        contenido = self.codigo_texto.get("1.0", "end-1c")
+        
+        analizador_lexico = AnalizadorLexico()
+
+        tokens_por_linea = analizador_lexico.analizar_contenido(contenido)
+      
+        traduccion = self.traducir_contenido(tokens_por_linea)
+
+        ventana_traduccion = tk.Toplevel(self.root)
+        ventana_traduccion.title("Traducción a MongoDB")
+
+        cuadro_traduccion = tk.Text(ventana_traduccion, wrap="word")
+        cuadro_traduccion.pack(fill="both", expand=True)
+        cuadro_traduccion.insert("1.0", traduccion)
+
+    def traducir_contenido(self, tokens_por_linea):
+        traduccion = ""
+        for tokens in tokens_por_linea:
+            if len(tokens) == 0:
+                continue
+            primer_token = tokens[0]
+            if primer_token.tipo == "PALABRA_RESERVADA":
+                if primer_token.valor == "CrearBD":
+                    traduccion += f"use('{tokens[1].valor}');\n"
+                elif primer_token.valor == "EliminarBD":
+                    traduccion += "db.dropDatabase();\n"
+                elif primer_token.valor == "CrearColeccion":
+                    traduccion += f"db.createCollection('{tokens[1].valor}');\n"
+                elif primer_token.valor == "EliminarColeccion":
+                    traduccion += f"db.{tokens[1].valor}.drop();\n"
+                elif primer_token.valor == "BuscarTodo":
+                    traduccion += f"db.{tokens[1].valor}.find();\n"
+                elif primer_token.valor == "BuscarUnico":
+                    traduccion += f"db.{tokens[1].valor}.findOne();\n"
+        return traduccion
+    
+    def mostrar_tokens(self):
+        contenido = self.codigo_texto.get("1.0", "end-1c")
+        
+        analizador_lexico = AnalizadorLexico()
+        tokens_por_linea = analizador_lexico.analizar_contenido(contenido)
+
+        ventana_tokens = tk.Toplevel(self.root)
+        ventana_tokens.title("Tokens")
+
+        tabla_tokens = ttk.Treeview(ventana_tokens, columns=("Línea", "Tipo", "Valor"))
+        tabla_tokens.heading("#0", text="Índice")
+        tabla_tokens.heading("Línea", text="Línea")
+        tabla_tokens.heading("Tipo", text="Tipo")
+        tabla_tokens.heading("Valor", text="Valor")
+
+        for num_linea, tokens in enumerate(tokens_por_linea, start=1):
+            for indice, token in enumerate(tokens, start=1):
+                if token.tipo != "ERROR_LEXICO" and token.tipo != "ERROR_SINTACTICO":
+                    tabla_tokens.insert("", "end", text=str(indice), values=(num_linea, token.tipo, token.valor))
+
+        tabla_tokens.pack(expand=True, fill="both")
+
+
 
 if __name__ == "__main__":
     root = tk.Tk()
