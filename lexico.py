@@ -1,5 +1,4 @@
 # lexico.py
-
 class Token:
     def __init__(self, tipo, valor):
         self.tipo = tipo
@@ -8,7 +7,7 @@ class Token:
 class AnalizadorLexico:
     def __init__(self):
         self.palabras_reservadas = {
-            "$set", "CrearBD", "EliminarBD", "CrearColeccion", "EliminarColeccion",
+            "CrearBD", "EliminarBD", "CrearColeccion", "EliminarColeccion",
             "InsertarUnico", "ActualizarUnico", "EliminarUnico",
             "BuscarTodo", "BuscarUnico",
             "nueva", "set"
@@ -27,7 +26,7 @@ class AnalizadorLexico:
                 if palabra_actual:
                     tokens.append(self.obtener_token(palabra_actual))
                     palabra_actual = ""
-            elif caracter in ':();,.{}$="´':
+            elif caracter in "();:,.${}=":
                 if palabra_actual:
                     tokens.append(self.obtener_token(palabra_actual))
                     palabra_actual = ""
@@ -35,12 +34,10 @@ class AnalizadorLexico:
                     tokens.append(Token("PARENTESIS_ABIERTO", caracter))
                 elif caracter == ")":
                     tokens.append(Token("PARENTESIS_CERRADO", caracter))
-                elif caracter == "=":
-                    tokens.append(Token("ASIGNACION", caracter))
                 elif caracter == ",":
                     tokens.append(Token("COMA", caracter))
-                elif caracter == '"':
-                    tokens.append(Token("COMILLA", caracter))
+                elif caracter == "=":
+                    tokens.append(Token("ASIGNACION", caracter))
                 elif caracter == "{":
                     tokens.append(Token("CORCHETE_ABIERTO", caracter))
                 elif caracter == "}":
@@ -49,11 +46,9 @@ class AnalizadorLexico:
                     tokens.append(Token("PUNTO_Y_COMA", caracter))
                 elif caracter == ":":
                     tokens.append(Token("DOS_PUNTOS", caracter))
-                elif caracter == ".":
-                    tokens.append(Token("PUNTO", caracter))
                 elif caracter == "$":
                     tokens.append(Token("DOLAR", caracter))
-            elif caracter.isalnum():
+            elif caracter.isalnum() or caracter == '"':
                 palabra_actual += caracter
             else:
                 tokens.append(Token("ERROR_LEXICO", caracter))
@@ -73,11 +68,6 @@ class AnalizadorLexico:
         if palabra in self.palabras_reservadas:
             return Token("PALABRA_RESERVADA", palabra)
         elif palabra.startswith('"') and palabra.endswith('"'):
-            return Token("CADENA", palabra[1:-1])
-        elif palabra:
-            return Token("IDENTIFICADOR", palabra)
+            return Token("IDENTIFICADOR", palabra[1:-1])
         else:
-            return None 
-
-
-
+            return Token("CADENA", palabra)
