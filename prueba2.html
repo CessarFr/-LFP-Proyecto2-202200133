@@ -1,36 +1,21 @@
-<!--Una funcion puede declararse de tres maneras-->
-<!--funcion es una palabra reservada ya definida-->
-
-
-<!--Puede tener solo una cadena dentro de sus parentesis-->
-sFuncion Nombre = nueva Funcion("cadena");
-<!--Puede venir vacia-->
-<!--palabra reservada, identificador, asignacion, palabra reservada "nueva",palabra reservada, parentesis abierto, parentesis cerrado, punto y coma -->
+Funcion Nombre = nueva Funcion("cadena");
 Funcion Nombre = nueva Funcion();
-<!--Puede venir sin cadena pero con un "JSON"-->
-<!--palabra reservada, identificador, asignacion, palabra reservada "nueva",palabra reservada, parentesis abierto, comilla, cadena, comilla,coma,comilla, JSON, comilla,parentesis cerrado, punto y coma -->
 Funcion Nombre = nueva Funcion("cadena", " ");
 
-<!--CrearBD es una funcion que viene vacia-->
-<!--palabra reservada, identificador, asignacion, palabra reservada "nueva",palabra reservada, parentesis abierto, parentesis cerrado, punto y coma -->
 CrearBD base1 = nueva CrearBD();
 EliminarBD base2 = nueva EliminarBD();
-<!--CrearColeccion  es una funcion que tiene una cadena-->
-<!--palabra reservada, identificador, asignacion, palabra reservada "nueva",palabra reservada, parentesis abierto, comilla, cadena, comilla,parentesis cerrado, punto y coma -->
 CrearColeccion colecion1 = nueva CrearColeccion("AQUI");
-EliminarColeccion elimina1 = nueva EliminarColeccion("AQUI IRA");
+EliminarColeccion elimina1 = nueva EliminarColeccion("AQUI");
 
 InsertarUnico insertar1 = nueva InsertarUnico("NombreColeccion"," 
 {
 "nombre":"olaola",
 "autor":"Roberto",      
 "titulo":"Naranja"
-<!--PUEDE TENER UNA O MAS INSTRUCCIONES SIEMPRE Y CUANDO CUMPLAN CON LA ESTRUCTURA-->
-<!--En este caso tiene tres instrucciones-->
 }
 ");
 
-ActualizarUnico actualizar1 = nueva ActualizarUnico("AQUI IRA EL NOMBRE DE LA COLEECION"," 
+ActualizarUnico actualizar1 = nueva ActualizarUnico("AQUI"," 
 {
 "nombre": "olaola"
 },
@@ -39,11 +24,11 @@ $set: {"autor": "Mario Hugo"}
 }
 ");
 
-EliminarUnico eliminar1 = nueva EliminarUnico("AQUI IRA EL NOMBRE DE LA COLEECION","
+EliminarUnico eliminar1 = nueva EliminarUnico("AQUI","
 {
 "nombre": "olaola"
 }
 ");
 
-BuscarTodo todo = nueva BuscarTodo ("AQUI IRA EL NOMBRE DE LA COLEECION");
-BuscarUnico todo = nueva BuscarUnico ("AQUI IRA EL NOMBRE DE LA COLEECION");
+BuscarTodo todo = nueva BuscarTodo ("AQUI");
+BuscarUnico todo = nueva BuscarUnico ("AQUI");
