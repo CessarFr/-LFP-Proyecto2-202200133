@@ -1,4 +1,3 @@
-# lexico.py
 class Token:
     def __init__(self, tipo, valor):
         self.tipo = tipo
@@ -51,7 +50,8 @@ class AnalizadorLexico:
             elif caracter.isalnum() or caracter == '"':
                 palabra_actual += caracter
             else:
-                tokens.append(Token("ERROR_LEXICO", caracter))
+                if caracter not in [" ", "\t"]:
+                    tokens.append(Token("ERROR_LEXICO", caracter))
 
         if palabra_actual:
             tokens.append(self.obtener_token(palabra_actual))

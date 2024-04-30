@@ -1,4 +1,3 @@
-# sintactico.py
 class AnalizadorSintactico:
     def __init__(self):
         pass
@@ -99,6 +98,8 @@ class AnalizadorSintactico:
 
     def analizar_contenido(self, tokens_por_linea): 
         for tokens in tokens_por_linea:
+            if not tokens:
+                continue
             if not self.analizar_linea(tokens):  
                 return False
         return True

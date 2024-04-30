@@ -1,0 +1,4 @@
+EliminarBD base222 = nueva EliminarBD();
+BuscarTodo todito = nueva BuscarTodo ("AQUI")
+BuscarUnico todoooooo = nueva BuscarUnico ("AQUI")
+CrearBD base1111  nueva CrearBD();

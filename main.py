@@ -1,10 +1,9 @@
-# main.py
 import tkinter as tk
 from tkinter import ttk
+from graphviz import Digraph
 from tkinter import filedialog, messagebox
 from lexico import AnalizadorLexico
 from sintactico import AnalizadorSintactico
-
 
 class InterfazApp:
     def __init__(self, root):
@@ -35,6 +34,8 @@ class InterfazApp:
         herramientas_menu = tk.Menu(menubar, tearoff=0)
         herramientas_menu.add_command(label="Tokens", command=self.mostrar_tokens)
         menubar.add_cascade(label="Herramientas", menu=herramientas_menu)
+        herramientas_menu.add_command(label="Errores", command=self.mostrar_errores)
+
 
         self.root.config(menu=menubar)
 
@@ -55,7 +56,7 @@ class InterfazApp:
         self.archivo_actual = None
 
     def abrir_archivo(self):
-        archivo = filedialog.askopenfilename(filetypes=[("Archivos de texto", "*.html"), ("Todos los archivos", "*.*")])
+        archivo = filedialog.askopenfilename(filetypes=[("Archivos de texto", "*.txt"), ("Todos los archivos", "*.*")])
         if archivo:
             with open(archivo, "r", encoding="utf-8") as f:  
                 contenido = f.read()
@@ -179,8 +180,99 @@ class InterfazApp:
                     tabla_tokens.insert("", "end", text=str(indice), values=(num_linea, token.tipo, token.valor))
 
         tabla_tokens.pack(expand=True, fill="both")
+        
+        
+    def mostrar_errores(self):
+        errores_lexicos = []
+        errores_sintacticos = []
 
+        analizador_lexico = AnalizadorLexico()
+        analizador_sintactico = AnalizadorSintactico()
 
+        contenido = self.codigo_texto.get("1.0", "end-1c")
+        tokens_por_linea = analizador_lexico.analizar_contenido(contenido)
+
+        for num_linea, tokens in enumerate(tokens_por_linea, start=1):
+            if not analizador_sintactico.analizar_linea(tokens):
+                errores_sintacticos.append((num_linea, "Error sintáctico en la estructura"))
+
+            for token in tokens:
+                if token.tipo == "ERROR_LEXICO":
+                    errores_lexicos.append((num_linea, token))
+
+        if errores_lexicos or errores_sintacticos:
+            ventana_errores = tk.Toplevel(self.root)
+            ventana_errores.title("Errores")
+            
+            frame = tk.Frame(ventana_errores)
+            frame.pack(fill="both", expand=True)
+
+            lexico_label = tk.Label(frame, text="Errores Léxicos")
+            lexico_label.pack()
+            lexico_table = ttk.Treeview(frame, columns=("Línea", "Error"), show="headings")
+            lexico_table.heading("Línea", text="Línea")
+            lexico_table.heading("Error", text="Error")
+            lexico_table.pack(fill="both", expand=True)
+
+            for linea, error in errores_lexicos:
+                lexico_table.insert("", "end", values=(linea, error.valor))
+
+            sintactico_label = tk.Label(frame, text="Errores Sintácticos")
+            sintactico_label.pack()
+            sintactico_table = ttk.Treeview(frame, columns=("Línea", "Error"), show="headings")
+            sintactico_table.heading("Línea", text="Línea")
+            sintactico_table.heading("Error", text="Error")
+            sintactico_table.pack(fill="both", expand=True)
+
+            for linea, error in errores_sintacticos:
+                sintactico_table.insert("", "end", values=(linea, error))
+        else:
+            messagebox.showinfo("Sin Errores", "No se encontraron errores léxicos ni sintácticos en el archivo.")
+
+grafo = Digraph()
+
+grafo.node("Interfaz", label="Interfaz")
+grafo.node("TextoEntrada", label="Texto de Entrada")
+grafo.node("AnalizadorLexico", label="Analizador Léxico")
+grafo.node("Tokens", label="Tokens válidos")
+grafo.node("AnalizadorSintactico", label="Analizador Sintáctico")
+grafo.node("EstructurasValidas", label="Estructuras Válidas")
+grafo.node("TraduccionMongoDB", label="Traducción a MongoDB")
+grafo.node("TablaTokens", label="Tabla de Tokens")
+grafo.node("TablaErrores", label="Tabla de Errores")
+
+grafo.edge("Interfaz", "TextoEntrada", label="Entrada de texto")
+grafo.edge("TextoEntrada", "AnalizadorLexico", label="Texto sin procesar")
+grafo.edge("AnalizadorLexico", "Tokens", label="Lista de Tokens válidos")
+grafo.edge("Tokens", "AnalizadorSintactico", label="Lista de Tokens válidos")
+grafo.edge("AnalizadorSintactico", "EstructurasValidas", label="Estructuras válidas")
+grafo.edge("EstructurasValidas", "TraduccionMongoDB", label="Estructuras válidas")
+grafo.edge("AnalizadorLexico", "TablaTokens", label="Tabla de Tokens")
+grafo.edge("AnalizadorSintactico", "TablaErrores", label="Tabla de Errores")
+
+grafo.node("PalabrasReservadas", label="Palabras Reservadas")
+grafo.node("CaracteresEspeciales", label="Caracteres Especiales")
+grafo.node("Identificadores", label="Identificadores")
+grafo.node("Cadenas", label="Cadenas")
+grafo.edge("AnalizadorLexico", "PalabrasReservadas", label="Palabras Reservadas")
+grafo.edge("AnalizadorLexico", "CaracteresEspeciales", label="Caracteres Especiales")
+grafo.edge("AnalizadorLexico", "Identificadores", label="Identificadores")
+grafo.edge("AnalizadorLexico", "Cadenas", label="Cadenas")
+
+grafo.node("EstructuraCrearBD", label="CrearBD")
+grafo.node("EstructuraEliminarBD", label="EliminarBD")
+grafo.node("EstructuraCrearColeccion", label="CrearColeccion")
+grafo.node("EstructuraEliminarColeccion", label="EliminarColeccion")
+grafo.node("EstructuraBuscarTodo", label="BuscarTodo")
+grafo.node("EstructuraBuscarUnico", label="BuscarUnico")
+grafo.edge("AnalizadorSintactico", "EstructuraCrearBD", label="CrearBD")
+grafo.edge("AnalizadorSintactico", "EstructuraEliminarBD", label="EliminarBD")
+grafo.edge("AnalizadorSintactico", "EstructuraCrearColeccion", label="CrearColeccion")
+grafo.edge("AnalizadorSintactico", "EstructuraEliminarColeccion", label="EliminarColeccion")
+grafo.edge("AnalizadorSintactico", "EstructuraBuscarTodo", label="BuscarTodo")
+grafo.edge("AnalizadorSintactico", "EstructuraBuscarUnico", label="BuscarUnico")
+
+grafo.render("grafo_programa_actualizado", format="png", cleanup=True)
 
 if __name__ == "__main__":
     root = tk.Tk()
